@@ -1,4 +1,5 @@
 using Chapter.Contexts;
+using Chapter.Interfaces;
 using Chapter.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,9 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddCors(options => { options.AddPolicy("CorsPolicy", policy => { policy.WithOrigins("https://localhost:7266").AllowAnyHeader().AllowAnyMethod();});});
+
 builder.Services.AddScoped<SqlContext, SqlContext>();
 
 builder.Services.AddTransient<LivroRepository, LivroRepository>();
+
+builder.Services.AddTransient<IUsuarioRepository, UsuarioRepository>();
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -26,6 +31,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("CorsPolicy");
 
 app.UseAuthorization();
 
