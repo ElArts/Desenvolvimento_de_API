@@ -1,6 +1,7 @@
 using Chapter.Contexts;
 using Chapter.Interfaces;
 using Chapter.Repositories;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,27 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddCors(options => { options.AddPolicy("CorsPolicy", policy => { policy.WithOrigins("https://localhost:7266").AllowAnyHeader().AllowAnyMethod();});});
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultChallengeScheme = "JwtBearer";
+    options.DefaultAuthenticateScheme = "JwtBearer";
+}
+).AddJwtBearer("JwtBearer", options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateAudience = true,
+        ValidateIssuer = true,
+        ValidateLifetime = true,
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("chapter-chave-autenticacao")),
+        ClockSkew = TimeSpan.FromMinutes(60),
+        ValidAudience = "chapter.webapi",
+        ValidIssuer = "chatper.webapi"
+};
+}
+
+);
 
 builder.Services.AddScoped<SqlContext, SqlContext>();
 
@@ -33,6 +55,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("CorsPolicy");
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
